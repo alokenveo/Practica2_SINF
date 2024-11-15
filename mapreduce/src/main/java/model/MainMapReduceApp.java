@@ -6,9 +6,7 @@ import java.util.HashSet;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -24,64 +22,64 @@ public class MainMapReduceApp extends Configured implements Tool {
 
 	// CLASES IMPRESCINDIBLES
 	public static class FrecuenciaURLMapper extends Mapper<Object, Text, Text, IntWritable> {
-		public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+		public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
 			String[] linea = value.toString().split(",");
 			String url = format(linea[2]);
 			context.write(new Text(url), new IntWritable(1));
 		}
 	}
 
-	public static class FrecuenciaURLReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+	public static class FrecuenciaURLReducer extends Reducer<Text, IntWritable, Text, Text> {
 		public void reduce(Text key, Iterable<IntWritable> values, Context context)
 				throws IOException, InterruptedException {
 			int cont = 0;
 			for (IntWritable val : values) {
 				cont += val.get();
 			}
-			context.write(key, new IntWritable(cont));
+			context.write(key, new Text(Integer.toString(cont)));
 		}
 	}
 
 	public static class ErroresHTTPMapper extends Mapper<Object, Text, Text, IntWritable> {
-		public void map(LongWritable key, Text text, Context context) throws IOException, InterruptedException {
+		public void map(Object key, Text text, Context context) throws IOException, InterruptedException {
 			String[] linea = text.toString().split(",");
 			String code = format(linea[3]);
 			context.write(new Text(code), new IntWritable(1));
 		}
 	}
 
-	public static class ErroresHTTPReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+	public static class ErroresHTTPReducer extends Reducer<Text, IntWritable, Text, Text> {
 		public void reduce(Text key, Iterable<IntWritable> values, Context context)
 				throws IOException, InterruptedException {
 			int cont = 0;
 			for (IntWritable val : values) {
 				cont += val.get();
 			}
-			context.write(key, new IntWritable(cont));
+			context.write(key, new Text(Integer.toString(cont)));
 		}
 	}
 
 	public static class IPUnicasMapper extends Mapper<Object, Text, Text, IntWritable> {
-		public void map(LongWritable key, Text text, Context context) throws IOException, InterruptedException {
+		public void map(Object key, Text text, Context context) throws IOException, InterruptedException {
 			String[] linea = text.toString().split(",");
-			String ip = format(linea[3]);
+			String ip = format(linea[1]);
 			context.write(new Text(ip), new IntWritable(1));
 		}
 	}
 
-	public static class IPUnicasReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+	public static class IPUnicasReducer extends Reducer<Text, IntWritable, Text, Text> {
 		public void reduce(Text key, Iterable<IntWritable> values, Context context)
 				throws IOException, InterruptedException {
 			HashSet<Object> visitasUnicaSet = new HashSet<>();
 			for (IntWritable val : values) {
 				visitasUnicaSet.add(key);
 			}
-			context.write(key, new IntWritable(visitasUnicaSet.size()));
+			context.write(key, new Text(String.valueOf(visitasUnicaSet.size())));
 		}
 	}
 
 	public static class FrecuenciaHoraMapper extends Mapper<Object, Text, Text, IntWritable> {
-		public void map(LongWritable key, Text text, Context context) throws IOException, InterruptedException {
+		public void map(Object key, Text text, Context context) throws IOException, InterruptedException {
 			String[] linea = text.toString().split(",");
 			String date = format(linea[0]);
 			String hora = date.split(":")[1];
@@ -89,26 +87,26 @@ public class MainMapReduceApp extends Configured implements Tool {
 		}
 	}
 
-	public static class FrecuenciaHoraReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+	public static class FrecuenciaHoraReducer extends Reducer<Text, IntWritable, Text, Text> {
 		public void reduce(Text key, Iterable<IntWritable> values, Context context)
 				throws IOException, InterruptedException {
-			int count = 0;
+			int cont = 0;
 			for (IntWritable val : values) {
-				count += val.get();
+				cont += val.get();
 			}
-			context.write(key, new IntWritable(count));
+			context.write(key, new Text(Integer.toString(cont)));
 		}
 	}
 
 	public static class DistribucionDispositivoMapper extends Mapper<Object, Text, Text, IntWritable> {
-		public void map(LongWritable key, Text text, Context context) throws IOException, InterruptedException {
+		public void map(Object key, Text text, Context context) throws IOException, InterruptedException {
 			String[] linea = text.toString().split(",");
 			String agent = format(linea[4]);
 			context.write(new Text(agent), new IntWritable(1));
 		}
 	}
 
-	public static class DistribucionDispositivoReducer extends Reducer<Text, IntWritable, Text, DoubleWritable> {
+	public static class DistribucionDispositivoReducer extends Reducer<Text, IntWritable, Text, Text> {
 		public void reduce(Text key, Iterable<IntWritable> values, Context context)
 				throws IOException, InterruptedException {
 			int visitasTotales = 0;
@@ -119,7 +117,7 @@ public class MainMapReduceApp extends Configured implements Tool {
 			}
 
 			double porcentaje = ((double) dispositivoVisitas / visitasTotales) * 100;
-			context.write(key, new DoubleWritable(porcentaje));
+			context.write(key, new Text(Double.toString(porcentaje)));
 		}
 	}
 
@@ -146,6 +144,11 @@ public class MainMapReduceApp extends Configured implements Tool {
 
 		job.setInputFormatClass(TextInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);
+
+		job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputValueClass(IntWritable.class);
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(Text.class);
 
 		FileInputFormat.addInputPath(job, new Path(input));
 		FileOutputFormat.setOutputPath(job, new Path(output));

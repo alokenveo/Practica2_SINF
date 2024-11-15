@@ -12,8 +12,8 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-	
-	
+
+
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -32,4 +32,18 @@
 			<version>3.3.5</version>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.1.0</version>
+				<configuration>
+					<finalName>mapreduce-alfoke-2024</finalName>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
 </project>
