@@ -44,8 +44,8 @@ src/ ├── main/ │ └── java/ │ └── model/ │ └── Main
    - distribucion_por_dispositivo/
 
 ### Ejemplo de ejecución
-```bash
-hadoop jar mapreduce-log-analysis.jar model.MainMapReduceApp input/logs.csv output/
+   ```bash
+   hadoop jar mapreduce-log-analysis.jar model.MainMapReduceApp input/logs.csv output/
 
 ## Clases Implementadas
 1. Frecuencia de URLs: Calcula la cantidad de visitas por URL
