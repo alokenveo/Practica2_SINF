@@ -44,11 +44,24 @@ src/ ├── main/ │ └── java/ │ └── model/ │ └── Main
    - distribucion_por_dispositivo/
 
 ### Ejemplo de ejecución
-   ```bash
-   hadoop jar mapreduce-log-analysis.jar model.MainMapReduceApp input/logs.csv output/
+      ```bash
+      hadoop jar mapreduce-log-analysis.jar model.MainMapReduceApp input/logs.csv output/
+
 
 ## Clases Implementadas
-1. Frecuencia de URLs: Calcula la cantidad de visitas por URL
-2. Errores HTTP: Contabiliza códigos de error en los registros
-
+   1. Frecuencias por URL: Calcula la cantidad de visitas por URL.
+      - FrecuenciaURLMapper
+      - FrecuenciaURLReducer
+   3. Errores HTTP: Contabiliza códigos de error en los registros.
+      - ErroresHTTPMapper
+      - ErroresHTTPReducer
+   5. Visitas por IP única: Determina las IPs únicas en los registros.
+      - IPUnicasMapper
+      - IPUnicasReducer
+   7. Frecuencia por hora: Analiza el tráfico por horas.
+      - FrecuenciaHoraMapper
+      - FrecuenciaHoraReducer
+   9. Distribuicón por Dispositivo: Calcula el porcentaje de visitas por dispositivo.
+      - DistribucionDispositivoMapper
+      - DistribucionDispositivoReduce
 
