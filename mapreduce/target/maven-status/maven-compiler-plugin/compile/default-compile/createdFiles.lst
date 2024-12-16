@@ -1,0 +1,11 @@
+model\MainMapReduceApp$IPUnicasReducer.class
+model\MainMapReduceApp$FrecuenciaURLMapper.class
+model\MainMapReduceApp$FrecuenciaURLReducer.class
+model\MainMapReduceApp.class
+model\MainMapReduceApp$DistribucionDispositivoReducer.class
+model\MainMapReduceApp$ErroresHTTPReducer.class
+model\MainMapReduceApp$FrecuenciaHoraMapper.class
+model\MainMapReduceApp$IPUnicasMapper.class
+model\MainMapReduceApp$ErroresHTTPMapper.class
+model\MainMapReduceApp$DistribucionDispositivoMapper.class
+model\MainMapReduceApp$FrecuenciaHoraReducer.class

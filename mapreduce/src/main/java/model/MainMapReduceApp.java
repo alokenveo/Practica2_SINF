@@ -1,7 +1,9 @@
 package model;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
@@ -30,8 +32,17 @@ public class MainMapReduceApp extends Configured implements Tool {
 	 * Mapper para contar la frecuencia de URLs.
 	 */
 	public static class FrecuenciaURLMapper extends Mapper<Object, Text, Text, IntWritable> {
+
+		private boolean encabezado = true;
+
 		@Override
 		public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+
+			if (encabezado) {
+				encabezado = false;
+				return;
+			}
+
 			String[] linea = value.toString().split(",");
 			String url = format(linea[2]);
 			context.write(new Text(url), new IntWritable(1));
@@ -57,11 +68,28 @@ public class MainMapReduceApp extends Configured implements Tool {
 	 * Mapper para contar los códigos de error HTTP.
 	 */
 	public static class ErroresHTTPMapper extends Mapper<Object, Text, Text, IntWritable> {
+
+		private boolean encabezado = true;
+
 		@Override
 		public void map(Object key, Text text, Context context) throws IOException, InterruptedException {
+
+			if (encabezado) {
+				encabezado = false;
+				return;
+			}
+
 			String[] linea = text.toString().split(",");
 			String code = format(linea[3]);
-			context.write(new Text(code), new IntWritable(1));
+
+			try {
+				int statusCode = Integer.parseInt(code);
+				if (statusCode >= 400 && statusCode <= 599) {
+					context.write(new Text(code), new IntWritable(1));
+				}
+			} catch (NumberFormatException e) {
+				System.err.println("Código no válido encontrado: " + code);
+			}
 		}
 	}
 
@@ -84,8 +112,17 @@ public class MainMapReduceApp extends Configured implements Tool {
 	 * Mapper para identificar las IPs únicas.
 	 */
 	public static class IPUnicasMapper extends Mapper<Object, Text, Text, IntWritable> {
+
+		private boolean encabezado = true;
+
 		@Override
 		public void map(Object key, Text text, Context context) throws IOException, InterruptedException {
+
+			if (encabezado) {
+				encabezado = false;
+				return;
+			}
+
 			String[] linea = text.toString().split(",");
 			String ip = format(linea[1]);
 			context.write(new Text(ip), new IntWritable(1));
@@ -113,12 +150,24 @@ public class MainMapReduceApp extends Configured implements Tool {
 	 * día.
 	 */
 	public static class FrecuenciaHoraMapper extends Mapper<Object, Text, Text, IntWritable> {
+
+		private boolean encabezado = true;
+
 		@Override
 		public void map(Object key, Text text, Context context) throws IOException, InterruptedException {
+
+			if (encabezado) {
+				encabezado = false;
+				return;
+			}
+
 			String[] linea = text.toString().split(",");
 			String date = format(linea[0]);
-			String hora = date.split(":")[1];
-			context.write(new Text(hora), new IntWritable(1));
+			String[] partesFecha = date.split(":");
+			if (partesFecha.length > 1) {
+				String hora = partesFecha[1];
+				context.write(new Text(hora), new IntWritable(1));
+			}
 		}
 	}
 
@@ -143,8 +192,17 @@ public class MainMapReduceApp extends Configured implements Tool {
 	 * de dispostivo
 	 */
 	public static class DistribucionDispositivoMapper extends Mapper<Object, Text, Text, IntWritable> {
+
+		private boolean encabezado = true;
+
 		@Override
 		public void map(Object key, Text text, Context context) throws IOException, InterruptedException {
+
+			if (encabezado) {
+				encabezado = false;
+				return;
+			}
+
 			String[] linea = text.toString().split(",");
 			String agent = format(linea[4]);
 			context.write(new Text(agent), new IntWritable(1));
@@ -156,18 +214,30 @@ public class MainMapReduceApp extends Configured implements Tool {
 	 * de dispostivo
 	 */
 	public static class DistribucionDispositivoReducer extends Reducer<Text, IntWritable, Text, Text> {
+		private int visitasTotales = 0;
+		private Map<String, Integer> dispositivoVisitasMap = new HashMap<>();
+
 		@Override
-		public void reduce(Text key, Iterable<IntWritable> values, Context context)
+		protected void reduce(Text key, Iterable<IntWritable> values, Context context)
 				throws IOException, InterruptedException {
-			int visitasTotales = 0;
 			int dispositivoVisitas = 0;
+
 			for (IntWritable val : values) {
-				visitasTotales++;
 				dispositivoVisitas += val.get();
 			}
 
-			double porcentaje = ((double) dispositivoVisitas / visitasTotales) * 100;
-			context.write(key, new Text(Double.toString(porcentaje)));
+			visitasTotales += dispositivoVisitas;
+			dispositivoVisitasMap.put(key.toString(), dispositivoVisitas);
+		}
+
+		@Override
+		protected void cleanup(Context context) throws IOException, InterruptedException {
+			for (Map.Entry<String, Integer> entry : dispositivoVisitasMap.entrySet()) {
+				String dispositivo = entry.getKey();
+				int dispositivoVisitas = entry.getValue();
+				double porcentaje = (double) dispositivoVisitas / visitasTotales * 100;
+				context.write(new Text(dispositivo), new Text(String.format("%.2f", porcentaje)));
+			}
 		}
 	}
 
