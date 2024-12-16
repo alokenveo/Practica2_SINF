@@ -8,7 +8,6 @@ Este proyecto implementa una serie de tareas de análisis de registros usando Ha
 - [Estructura del Proyecto](#estructura-del-proyecto)
 - [Uso](#uso)
 - [Clases Implementadas](#clases-implementadas)
-- [Contribuciones](#contribuciones)
 
 ## Requisitos
 
